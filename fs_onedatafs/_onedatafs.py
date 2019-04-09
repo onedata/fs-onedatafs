@@ -44,6 +44,12 @@ from fs.time import datetime_to_epoch
 
 
 def statToPermissions(attr):
+    """
+    Convert PyFilesystem Info instance `attr` to permissions
+    string.
+
+    :param Info attr: The PyFilesystem Info instance.
+    """
 
     # 'other' permissions
     other = ''
@@ -72,6 +78,13 @@ def statToPermissions(attr):
 
 
 def ensureUnicode(path):
+    """
+    Makes sure that the value is in Unicode. On Python 2, it means
+    converting the `str` instance to `unicode` instance.
+
+    :param path str: The string to convert to Unicode.
+    """
+
     if six.PY2:
         if isinstance(path, str):
             return unicode(path)
@@ -79,11 +92,37 @@ def ensureUnicode(path):
 
 
 def toAscii(path):
+    """
+    Converts unicode instance to ascii.
+
+    :param path str: The string to convert to ascii
+    """
+
     return path.encode('ascii', 'replace')
 
 
 class OnedataFile(io.RawIOBase):
+    """
+    This class is a wrapper over OnedataFS file handle. As long
+    as an instance of the class is references, the file is
+    considered opened, including all buffers allocated by it internally.
+
+    The handle can be explicitly closed using `close()` method.
+    """
+
     def __init__(self, odfs, handle, path, mode):
+        """
+        `OnedataFile` constructor.
+
+        `OnedataFile` is intentended to be constructed manually, but
+        rather using `open()` or `openbin()` methods of `OnedataFS`.
+
+        :param OnedataFS odfs: Reference to OnedataFS instance
+        :param OnedataFileHandle handle: Instance of the OnedataFileHandle
+        :param str path: Full path to file or directory,
+                         relative to the filesystem root
+        :param int mode: File open mode
+        """
         # type: (OnedataFS, Text, Text) -> None
         super(OnedataFile, self).__init__()
         self.odfs = odfs
@@ -94,12 +133,22 @@ class OnedataFile(io.RawIOBase):
         self._lock = threading.Lock()
 
     def __repr__(self):
+        """
+        Returns unique representation of the file handle
+        """
+
         # type: () -> str
         _repr = "<onedatafile {!r} {!r}>"
         return _repr.format(self.path, self.mode)
 
     def close(self):
+        """
+        Closes the file handle.
+
+        This operation may invoke flushing of internall buffers.
+        """
         # type: () -> None
+        
         if not self.closed:
             with self._lock:
                 try:
@@ -108,15 +157,31 @@ class OnedataFile(io.RawIOBase):
                     super(OnedataFile, self).close()
 
     def tell(self):
+        """
+        Return current position in the file.
+        """
         # type: () -> int
+
         return self.pos
 
     def readable(self):
+        """
+        True if the file was opened for reading
+        """
         # type: () -> bool
+
         return self.mode.reading
 
     def read(self, size=-1):
+        """
+        Read `size` bytes starting from current position in the file.
+
+        If size is negative, read until end of file.
+
+        :param int size: Number of bytes to read.
+        """
         # type: (int) -> bytes
+
         if not self.mode.reading:
             raise IOError("File not open for reading")
 
@@ -139,11 +204,28 @@ class OnedataFile(io.RawIOBase):
         return b"".join(chunks)
 
     def readline(self, size=-1):
+        """
+        Read `size` bytes from the file starting from current position
+        in the file until the end of the line.
+
+        If `size` is negative read until end of the line.
+
+        :param int size: Number of bytes to read from the current line.
+        """
         # type: (int) -> bytes
+
         return next(line_iterator(self, size))  # type: ignore
 
     def readlines(self, hint=-1):
+        """
+        Read `hint` lines from the file starting from current position.
+
+        If `hint` is negative read until end of the line.
+
+        :param int hint: Number of lines to read.
+        """
         # type: (int) -> List[bytes]
+
         lines = []
         size = 0
         for line in line_iterator(self):  # type: ignore
@@ -154,11 +236,21 @@ class OnedataFile(io.RawIOBase):
         return lines
 
     def writable(self):
+        """
+        True if the file was opened for writing.
+        """
         # type: () -> bool
+
         return self.mode.writing
 
     def write(self, data):
+        """
+        Write `data` to file starting from current position in the file
+
+        :param bytes data: Data to write to the file
+        """
         # type: (bytes) -> int
+
         if not self.mode.writing:
             raise IOError("File not open for writing")
 
@@ -169,22 +261,53 @@ class OnedataFile(io.RawIOBase):
         return len(data)
 
     def writelines(self, lines):
+        """
+        Write `lines` to file starting at the current position in the file.
+        The elements of `lines` list do not need to contain new line
+        characters.
+
+        :param list lines: Lines to wrie to the file
+        """
         # type: (Iterable[bytes]) -> None
+
         self.write(b"".join(lines))
 
     def truncate(self, size=None):
+        """
+        Change the size of the file to `size`.
+
+        If `size` is smaller than the current size of the file,
+        the remaining data will be deleted, if the `size` is larger than the
+        current size of the file the file will be padded with zeros.
+
+        :param int size: The new size of the file
+        """
         # type: (Optional[int]) -> int
+
         if size is None:
             size = 0
         self._opfs.truncate(self.path, size)
         return size
 
     def seekable(self):
+        """
+        True if the file is seekable.
+        """
         # type: () -> bool
+
         return True
 
     def seek(self, pos, whence=Seek.set):
+        """
+        Change current position in an opened file.
+
+        The position can point beyond the current size of the file.
+        In such case the file will be contain holes.
+
+        :param int pos: New position in the file.
+        """
         # type: (int, SupportsInt) -> int
+
         _whence = int(whence)
         if _whence not in (Seek.set, Seek.current, Seek.end):
             raise ValueError("invalid value for whence")
@@ -192,7 +315,7 @@ class OnedataFile(io.RawIOBase):
         size = self.odfs.getinfo(self.path).size
 
         with self._lock:
-            self.pos = min(pos, size)
+            self.pos = pos
 
         return self.tell()
 
@@ -202,10 +325,6 @@ class OnedataFS(FS):
     """
     Construct a `Onedata <https://onedata.org>` filesystem for
     `PyFilesystem <https://pyfilesystem.org>`_
-
-    :param str host: The Onedata Oneprovider host name.
-    :param str token: The Onedata user access token.
-
     """
 
     _meta = {
@@ -230,8 +349,45 @@ class OnedataFS(FS):
             force_direct_io=False,
             no_buffer=False,
             io_trace_log=False,
-            provider_timeout=30
+            provider_timeout=30,
+            log_dir = None
     ):
+        """
+        OnedataFS constructor.
+
+        `OnedataFS` instance maintains an active connection pool to the
+        Oneprovider specified in the `host` parameter as long as it
+        is referenced in the code. To close the connection call `close()`
+        directly or use context manager.
+
+        :param str host: The Onedata Oneprovider host name
+        :param str token: The Onedata user access token
+        :param int port: The Onedata Oneprovider port
+        :param list space: The list of space names which should be opened.
+                        By default, all spaces are opened.
+        :param list space_id: The list of space id's which should be opened.
+                            By default, all spaces are opened.
+        :param bool insecure: When `True`, allow connecting to Oneproviders without
+                            valid SSL certificate.
+        :param bool force_proxy_io: When `True`, forces all data transfers to go
+                                    via Oneproviders.
+        :param bool force_direct_io: When `True`, forces all data transfers to go
+                                    directly via the target storage API. If storage
+                                    is not available, for instance due to network
+                                    firewalls, error will be returned for all
+                                    `read` and `write` operations
+        :param bool no_buffer: When `True`, disable all internal buffering in the
+                            OnedataFS
+        :param bool io_trace_log: When `True`, the OnedataFS will log all requests
+                                in a CSV file in the directory specified by
+                                `log_dir`
+        :param int provider_timeout: Specifies the timeout for waiting for
+                                    Oneprovider responses, in seconds.
+        :param str log_dir: Path in the filesystem, where internal OnedataFS logs
+                            should be stored. When `None`, no logging will be
+                            generated.
+        """
+
         self._host = host
         self._token = token
         self._port = port
@@ -260,16 +416,35 @@ class OnedataFS(FS):
         super(OnedataFS, self).__init__()
 
     def __repr__(self):
+        """
+        Return unique representation of the OnedataFS instance.
+        """
+
         return self.__str__()
 
     def __str__(self):
+        """
+        Return unique representation of the OnedataFS instance.
+        """
+
         return "<onedatafs '{}:{}/{}'>".format(self._host, self._port,
                                                self.session_id())
 
     def session_id(self):
+        """
+        Return unique session id representing the connection with
+        Oneprovider.
+        """
+
         return self._odfs.session_id()
 
     def isdir(self, path):
+        """
+        Returns `True` when the resource under `path` is an existing directory
+
+        :param str path: Path pointing to a file or directory.
+        """
+
         path = ensureUnicode(path)
         _path = self.validatepath(path)
         try:
@@ -278,6 +453,14 @@ class OnedataFS(FS):
             return False
 
     def getinfo(self, path, namespaces=None):
+        """
+        Return an Info instance for the resource (file or directory).
+
+        :param str path: Path pointing to a file or directory.
+        :param set namespaces: The list of PyFilesystem `Info` namespaces
+                               which should be included in the response.
+        """
+
         path = ensureUnicode(path)
         self.check()
         namespaces = namespaces or ()
@@ -316,7 +499,17 @@ class OnedataFS(FS):
         return Info(info)
 
     def openbin(self, path, mode="r", buffering=-1, **options):
+        """
+        Open file under `path` in binary mode.
+
+        :param str path: Path pointing to a file.
+        :param str mode: Text representation of open mode e.g. "rw+"
+        :param int buffering: Whether the BaseIO instance should be buffered
+                              or not
+        :param map options: Additional PyFilesystem options
+        """
         # type: (Text, Text, int, **Any) -> BinaryIO
+
         path = ensureUnicode(path)
         _mode = Mode(mode)
         _mode.validate_bin()
@@ -341,7 +534,15 @@ class OnedataFS(FS):
         return onedata_file  # type: ignore
 
     def listdir(self, path):
+        """
+        Return the contents of directory under `path`.
+
+        POSIX entries such as `.` and `..` are not returned.
+
+        :param str path: Path pointing to a file.
+        """
         # type: (Text) -> list
+
         path = ensureUnicode(path)
         _path = toAscii(self.validatepath(path))
 
@@ -363,6 +564,14 @@ class OnedataFS(FS):
         return list(_directory)
 
     def makedir(self, path, permissions=None, recreate=False):
+        """
+        Create a directory under `path`.
+
+        :param str path: Path pointing to a file.
+        :param Permissions permissions: PyFilesystem permission instance
+        :param bool recreate: Not supported
+        """
+
         path = ensureUnicode(path)
         self.check()
         _path = toAscii(self.validatepath(path))
@@ -381,6 +590,12 @@ class OnedataFS(FS):
         return SubFS(self, path)
 
     def remove(self, path):
+        """
+        Remove file under path.
+
+        :param str path: Path pointing to a file.
+        """
+
         path = ensureUnicode(path)
         self.check()
         _path = toAscii(self.validatepath(path))
@@ -390,12 +605,26 @@ class OnedataFS(FS):
         self._odfs.unlink(_path)
 
     def isempty(self, path):
+        """
+        Return `True` when directory is empty
+
+        :param str path: Path pointing to a directory.
+        """
+
         path = ensureUnicode(path)
         self.check()
         _path = toAscii(self.validatepath(path))
         return self._odfs.readdir(_path, 1, 0)
 
     def removedir(self, path):
+        """
+        Remove directory under `path`.
+
+        The directory must be empty.
+
+        :param str path: Path pointing to a directory.
+        """
+
         path = ensureUnicode(path)
         self.check()
         _path = toAscii(self.validatepath(path))
@@ -410,11 +639,26 @@ class OnedataFS(FS):
         self._odfs.unlink(_path)
 
     def setinfo(self, path, info):
+        """
+        Set file attributes.
+
+        :param str path: Path pointing to a file or directory.
+        :param Info info: A PyFilesystem `Info` instance
+        """
         path = ensureUnicode(path)
         # TODO
         self.getinfo(path)
 
     def move(self, src_path, dst_path, overwrite=False):
+        """
+        Rename file from `src_path` to `dst_path`.
+
+        :param str src_path: The old file path
+        :param str dst_path: The new file path
+        :param bool overwrite: When `True`, existing file at `dst_path` will be
+                               replaced by contents of file at `src_path`
+        """
+
         src_path = ensureUnicode(src_path)
         dst_path = ensureUnicode(dst_path)
 
@@ -424,6 +668,12 @@ class OnedataFS(FS):
         self._odfs.rename(toAscii(src_path), toAscii(dst_path))
 
     def listxattr(self, path):
+        """
+        Returns the list of extended attributes on a file
+
+        :param str path: Path pointing to a file or directory.
+        """
+
         path = ensureUnicode(path)
         _path = toAscii(path)
 
@@ -437,6 +687,14 @@ class OnedataFS(FS):
         return list(result)
 
     def getxattr(self, path, name):
+        """
+        Return the value of extended attribute with `name` from file
+        or directory at `path`.
+
+        :param str path: Path pointing to a file or directory.
+        :param str name: Name of the extended attribute.
+        """
+
         path = ensureUnicode(path)
         _path = toAscii(path)
         _name = toAscii(name)
@@ -446,6 +704,15 @@ class OnedataFS(FS):
         return self._odfs.getxattr(_path, _name)
 
     def setxattr(self, path, name, value):
+        """
+        Set the value of extended attribute with `name` from file
+        or directory at `path` to `value`.
+
+        :param str path: Path pointing to a file or directory.
+        :param str name: Name of the extended attribute.
+        :param str name: New value of the extended attribute.
+        """
+
         path = ensureUnicode(path)
         _path = toAscii(path)
         _name = toAscii(name)
@@ -455,6 +722,14 @@ class OnedataFS(FS):
         return self._odfs.getxattr(_path, _name)
 
     def removexattr(self, path, name):
+        """
+        Remove an extended attribute with `name` from file
+        or directory at `path`.
+
+        :param str path: Path pointing to a file or directory.
+        :param str name: Name of the extended attribute.
+        """
+
         path = ensureUnicode(path)
         _path = toAscii(path)
         _name = toAscii(name)
@@ -462,5 +737,3 @@ class OnedataFS(FS):
         self.getinfo(path)
 
         self._odfs.removexattr(_path, _name)
-
-
