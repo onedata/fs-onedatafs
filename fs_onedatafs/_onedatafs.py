@@ -101,6 +101,64 @@ def toAscii(path):
     return path.encode('ascii', 'replace')
 
 
+class OnedataSubFS(SubFS):
+    """
+    Provides a subclass of SubFS delegating custom OnedataFS
+    methods to SubFS delegate.
+
+    """
+    def __init__(self, parent_fs, path):
+    	"""
+    	OnedataSubFS constructor.
+
+    	:param OnedataFS parent_fs: Parent filesystem instance
+    	:param str path: Directory path in parent filesystem.
+    	"""
+    	# type: (OnedataFS, Text) -> OnedataSubFS
+
+        super(OnedataSubFS, self).__init__(parent_fs, path)
+
+    def listxattr(self, path):
+        """
+        Calls :func:`~OnedataFS.listxattr`
+        """
+        # type: (Text) -> list
+
+        return self.delegate_fs().listxattr(self.delegate_path(path)[1])
+
+    def getxattr(self, path, name):
+        """
+        Calls :func:`~OnedataFS.getxattr`
+        """
+        # type: (Text, Text) -> Text
+
+        return self.delegate_fs().getxattr(self.delegate_path(path)[1], name)
+
+    def setxattr(self, path, name, value):
+        """
+        Calls :func:`~OnedataFS.setxattr`
+        """
+        # type: (Text, Text, bytes) -> None
+
+        return self.delegate_fs().setxattr(self.delegate_path(path)[1], name)
+
+    def removexattr(self, path, name):
+        """
+        Calls :func:`~OnedataFS.removexattr`
+        """
+        # type: (Text, Text) -> None
+
+        return self.delegate_fs().removexattr(self.delegate_path(path)[1], name)
+
+    def location(self, path):
+        """
+        Calls :func:`~OnedataFS.location`
+        """
+        # type: (Text) -> dict
+
+        return self.delegate_fs().location(self.delegate_path(path)[1])
+
+
 class OnedataFile(io.RawIOBase):
     """
     This class is a wrapper over OnedataFS file handle. As long
@@ -501,6 +559,21 @@ class OnedataFS(FS):
             "permissions": statToPermissions(attr)}
 
         return Info(info)
+
+    def opendir(self, path):
+        """
+	Opens a directory and returns a SubOnedataFS object representing
+	its contents.
+
+        :param path: path to directory to open
+        :type path: string
+        """
+
+        if not self.exists(path):
+            raise ResourceNotFoundError(path)
+        if not self.isdir(path):
+            raise ResourceInvalidError("path should reference a directory")
+        return OnedataSubFS(self, path)
 
     def openbin(self, path, mode="r", buffering=-1, **options):
         """
