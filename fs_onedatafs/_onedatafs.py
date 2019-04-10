@@ -124,6 +124,7 @@ class OnedataFile(io.RawIOBase):
         :param int mode: File open mode
         """
         # type: (OnedataFS, Text, Text) -> None
+
         super(OnedataFile, self).__init__()
         self.odfs = odfs
         self.handle = handle
@@ -136,8 +137,8 @@ class OnedataFile(io.RawIOBase):
         """
         Returns unique representation of the file handle
         """
-
         # type: () -> str
+
         _repr = "<onedatafile {!r} {!r}>"
         return _repr.format(self.path, self.mode)
 
@@ -145,10 +146,10 @@ class OnedataFile(io.RawIOBase):
         """
         Closes the file handle.
 
-        This operation may invoke flushing of internall buffers.
+        This operation may invoke flushing of internal buffers.
         """
         # type: () -> None
-        
+
         if not self.closed:
             with self._lock:
                 try:
@@ -286,7 +287,7 @@ class OnedataFile(io.RawIOBase):
 
         if size is None:
             size = 0
-        self._opfs.truncate(self.path, size)
+        self.odfs.truncate(self.path, size)
         return size
 
     def seekable(self):
@@ -311,8 +312,6 @@ class OnedataFile(io.RawIOBase):
         _whence = int(whence)
         if _whence not in (Seek.set, Seek.current, Seek.end):
             raise ValueError("invalid value for whence")
-
-        size = self.odfs.getinfo(self.path).size
 
         with self._lock:
             self.pos = pos
@@ -419,6 +418,7 @@ class OnedataFS(FS):
         """
         Return unique representation of the OnedataFS instance.
         """
+        # type: () -> Text
 
         return self.__str__()
 
@@ -426,6 +426,7 @@ class OnedataFS(FS):
         """
         Return unique representation of the OnedataFS instance.
         """
+        # type: () -> Text
 
         return "<onedatafs '{}:{}/{}'>".format(self._host, self._port,
                                                self.session_id())
@@ -435,6 +436,7 @@ class OnedataFS(FS):
         Return unique session id representing the connection with
         Oneprovider.
         """
+        # type: () -> Text
 
         return self._odfs.session_id()
 
@@ -444,6 +446,7 @@ class OnedataFS(FS):
 
         :param str path: Path pointing to a file or directory.
         """
+        # type: (Text) -> bool
 
         path = ensureUnicode(path)
         _path = self.validatepath(path)
@@ -460,6 +463,7 @@ class OnedataFS(FS):
         :param set namespaces: The list of PyFilesystem `Info` namespaces
                                which should be included in the response.
         """
+        # type: (Text, list) -> bool
 
         path = ensureUnicode(path)
         self.check()
@@ -571,6 +575,7 @@ class OnedataFS(FS):
         :param Permissions permissions: PyFilesystem permission instance
         :param bool recreate: Not supported
         """
+        # type: (Text, Permissions, bool) -> SubFS
 
         path = ensureUnicode(path)
         self.check()
@@ -595,6 +600,7 @@ class OnedataFS(FS):
 
         :param str path: Path pointing to a file.
         """
+        # type: (Text) -> None
 
         path = ensureUnicode(path)
         self.check()
@@ -610,6 +616,7 @@ class OnedataFS(FS):
 
         :param str path: Path pointing to a directory.
         """
+        # type: (Text) -> bool
 
         path = ensureUnicode(path)
         self.check()
@@ -624,6 +631,7 @@ class OnedataFS(FS):
 
         :param str path: Path pointing to a directory.
         """
+        # type: (Text) -> None
 
         path = ensureUnicode(path)
         self.check()
@@ -645,6 +653,8 @@ class OnedataFS(FS):
         :param str path: Path pointing to a file or directory.
         :param Info info: A PyFilesystem `Info` instance
         """
+        # type: (Text, Info) -> None
+
         path = ensureUnicode(path)
         # TODO
         self.getinfo(path)
@@ -658,6 +668,7 @@ class OnedataFS(FS):
         :param bool overwrite: When `True`, existing file at `dst_path` will be
                                replaced by contents of file at `src_path`
         """
+        # type: (Text, Text, bool) -> None
 
         src_path = ensureUnicode(src_path)
         dst_path = ensureUnicode(dst_path)
@@ -673,6 +684,7 @@ class OnedataFS(FS):
 
         :param str path: Path pointing to a file or directory.
         """
+        # type: (Text) -> list
 
         path = ensureUnicode(path)
         _path = toAscii(path)
@@ -694,6 +706,7 @@ class OnedataFS(FS):
         :param str path: Path pointing to a file or directory.
         :param str name: Name of the extended attribute.
         """
+        # type: (Text, Text) -> Text
 
         path = ensureUnicode(path)
         _path = toAscii(path)
@@ -712,6 +725,7 @@ class OnedataFS(FS):
         :param str name: Name of the extended attribute.
         :param str name: New value of the extended attribute.
         """
+        # type: (Text, Text, bytes) -> None
 
         path = ensureUnicode(path)
         _path = toAscii(path)
@@ -729,6 +743,7 @@ class OnedataFS(FS):
         :param str path: Path pointing to a file or directory.
         :param str name: Name of the extended attribute.
         """
+        # type: (Text, Text) -> None
 
         path = ensureUnicode(path)
         _path = toAscii(path)
@@ -737,3 +752,24 @@ class OnedataFS(FS):
         self.getinfo(path)
 
         self._odfs.removexattr(_path, _name)
+
+    def location(self, path):
+        """
+        Return the location map which provides information on which
+        blocks of the file are replicated to the storage of the
+        Oneprovider to which the OnedataFS is currently connected to.
+
+        The indexes of the map are storage id's.
+
+        Example:
+        {
+            "ASCNJGKDSA": [[0,5], [10, 15]]
+        }
+
+        :param str path: Path pointing to a file or directory.
+        :param str name: Name of the extended attribute.
+        """
+        # type: (Text) -> dict
+
+        _path = toAscii(path)
+        return self._odfs.location_map(_path)
