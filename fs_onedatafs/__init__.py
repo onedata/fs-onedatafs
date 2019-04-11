@@ -8,4 +8,4 @@ __license__ = "This software is released under the MIT license cited in " \
               "LICENSE.txt"
 
 from ._version import __version__
-from ._onedatafs import OnedataFS
+from ._onedatafs import OnedataFS, OnedataSubFS

@@ -314,7 +314,10 @@ class OnedataFile(io.RawIOBase):
             raise IOError("File not open for writing")
 
         with self._lock:
-            self.handle.write(data, self.pos)
+            if isinstance(data, unicode):
+                self.handle.write(data.encode('utf-8'), self.pos)
+            else:
+                self.handle.write(data, self.pos)
             self.pos += len(data)
 
         return len(data)
