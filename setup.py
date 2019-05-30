@@ -1,9 +1,9 @@
 #!/usr/bin/env python
+"""OnedataFS is a Python client to Onedata virtual filesystem."""
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
-with open("fs_onedatafs/_version.py") as f:
-    exec(f.read())
+__version__ = "18.2.1.0"
 
 CLASSIFIERS = [
     "Development Status :: 4 - Beta",
@@ -23,10 +23,10 @@ CLASSIFIERS = [
 with open("README.rst", "rt") as f:
     DESCRIPTION = f.read()
 
-REQUIREMENTS = ["fs~=2.2", "six~=1.10"]
+REQUIREMENTS = ["fs", "six"]
 
 setup(
-    name="fs-onedatafs",
+    name="fs.onedatafs",
     author="Bartek Kryza",
     author_email="bkryza@gmail.com",
     classifiers=CLASSIFIERS,
@@ -34,11 +34,11 @@ setup(
     install_requires=REQUIREMENTS,
     license="MIT",
     long_description=DESCRIPTION,
-    packages=find_packages(),
+    packages=["fs.onedatafs"],
     keywords=["pyfilesystem", "Onedata", "oneclient"],
     platforms=["linux"],
     test_suite="nose.collector",
     url="https://github.com/onedata/fs-onedatafs",
     version=__version__,
-    entry_points={"fs.opener": ["odfs = fs_onedatafs.opener:OnedataFSOpener"]},
+    entry_points={"fs.opener": ["odfs = fs.onedatafs.opener:OnedataFSOpener"]},
 )
