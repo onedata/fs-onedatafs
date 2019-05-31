@@ -35,17 +35,7 @@ release: readme
 
 .PHONY: test
 test:
-	nosetests --with-coverage --cover-erase --logging-level=ERROR --cover-package=fs_onedatafs -a "!slow" fs_onedatafs/tests
-	rm .coverage
-
-.PHONY: slowtest
-slowtest:
-	nosetests --with-coverage --cover-erase --logging-level=ERROR --cover-package=fs_onedatafs fs_onedatafs/tests
-	rm .coverage
-
-.PHONY: testall
-testall:
-	tox
+	tox -e unit,flake8
 
 .PHONY: clean
 clean:
