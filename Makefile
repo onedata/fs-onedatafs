@@ -91,3 +91,24 @@ rpm: check_distribution package/$(PKG_ID).tar.gz
 		--sources package
 	mock --root $(DISTRIBUTION) --resultdir=package/packages \
 		--rebuild package/packages/onedata$(RELEASE)-python3-$(PKG_ID)*.src.rpm
+
+.PHONY: deb
+deb: check_distribution package/$(PKG_ID).tar.gz
+	rm -rf package/packages && mkdir -p package/packages
+	mv -f package/$(PKG_ID).tar.gz package/fs-onedatafs_$(PKG_VERSION).orig.tar.gz
+
+	cp -R pkg_config/debian package/$(PKG_ID)/
+	patch -d package/$(PKG_ID)/ -p1 -i pkg_config/$(DISTRIBUTION).patch
+	sed -i "s/{{version}}/$(PKG_VERSION)/g" package/$(PKG_ID)/debian/changelog
+	sed -i "s/{{build}}/$(PKG_BUILD)/g" package/$(PKG_ID)/debian/changelog
+	sed -i "s/{{distribution}}/$(DISTRIBUTION)/g" package/$(PKG_ID)/debian/changelog
+	sed -i "s/{{date}}/`date -R`/g" package/$(PKG_ID)/debian/changelog
+	sed -i "s/{{onedatafs_version}}/$(ONECLIENT_VERSION)/g" package/$(PKG_ID)/debian/control
+
+	cd package/$(PKG_ID) && sg sbuild -c "sbuild -sd $(DISTRIBUTION) -j6"
+	mv package/*$(PKG_VERSION).orig.tar.gz package/packages/
+	mv package/*$(PKG_VERSION)-$(PKG_BUILD)*.deb package/packages/
+	mv package/*$(PKG_VERSION)-$(PKG_BUILD).dsc package/packages/
+	mv package/*$(PKG_VERSION)-$(PKG_BUILD)_amd64.changes package/packages/
+	-mv package/*$(PKG_VERSION)-$(PKG_BUILD).debian.tar.xz package/packages/ || true
+

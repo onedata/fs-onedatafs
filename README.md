@@ -3,7 +3,8 @@
 OnedataFS is a [PyFilesystem](https://www.pyfilesystem.org/) interface to
 [Onedata](https://onedata.org) virtual file system.
 
-As a PyFilesystem concrete class, [OnedataFS](https://github.com/onedata/fs-onedatafs/) allows you to work with Onedata in the same way as any other supported filesystem.
+As a PyFilesystem concrete class, [OnedataFS](https://github.com/onedata/fs-onedatafs/)
+allows you to work with Onedata in the same way as any other supported filesystem.
 
 ## Installing
 
@@ -18,7 +19,7 @@ pip install fs-onedatafs
 Open an OnedataFS by explicitly using the constructor:
 
 ```python
-from fs_onedatafs import OnedataFS
+from fs.onedatafs import OnedataFS
 onedata_provider_host = "..."
 onedata_access_token = "..."
 odfs = OnedataFS(onedata_provider_host, onedata_access_token)

@@ -1,0 +1,2 @@
+.pybuild/pythonX.Y_3.5/build/fs/onedatafs/* usr/lib/python3.5/dist-packages/fs/onedatafs/
+pkg_config/data/__init__.py usr/lib/python3.5/dist-packages/fs/__init__.py

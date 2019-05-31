@@ -1,5 +1,7 @@
-fs-onedatafs (18.2.1.0-1) unstable; urgency=low
+fs-onedatafs ({{version}}-1) unstable; urgency=low
 
-  * source package automatically created by stdeb 0.8.5
+  * Build from {{version}}
 
- -- Bartek Kryza <bkryza@gmail.com>  Thu, 30 May 2019 11:49:33 +0200
+ -- Onedata Package Maintainer <support@onedata.org>  {{date}}
+
+

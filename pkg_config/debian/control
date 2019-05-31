@@ -2,20 +2,22 @@ Source: fs-onedatafs
 Maintainer: Bartek Kryza <bkryza@gmail.com>
 Section: python
 Priority: optional
-Build-Depends: dh-python, python-setuptools (>= 0.6b3), python-all (>= 2.6.6-3), debhelper (>= 9)
+Build-Depends: dh-python, git, python-setuptools (>= 0.6b3), python-all, python3-all, python-tox, python-pip, python3-pip, debhelper (>= 9)
 Standards-Version: 3.9.6
 Homepage: https://github.com/onedata/fs-onedatafs
 
-Package: python-fs.onedatafs
+Package: python-fs-plugin-onedatafs
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}
+Depends: ${misc:Depends}, ${python:Depends}, python-onedatafs (= {{onedatafs_version}})
 Description: Onedata filesystem for PyFilesystem2
- OnedataFS
- =========
- .
- OnedataFS is a `PyFilesystem <https://www.pyfilesystem.org/>`__
- interface to `Onedata <https://onedata.org>`__ virtual file system.
- .
- As a PyFilesystem concrete class,
- `OnedataFS <https://github.com/onedata/fs-onedatafs/>`__ allows you to
- work with Onedata in the same way as any other supported filesystem.
+ OnedataFS is an implementation of PyFilesystem interface to Onedata
+ virtual file system. OnedataFS allows you to work with Onedata using
+ PyFilesystem API, directly without any local mountpoints.
+
+Package: python3-fs-plugin-onedatafs
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, python3-onedatafs (= {{onedatafs_version}})
+Description: Onedata filesystem for PyFilesystem2
+ OnedataFS is an implementation of PyFilesystem interface to Onedata
+ virtual file system. OnedataFS allows you to work with Onedata using
+ PyFilesystem API, directly without any local mountpoints.
