@@ -8,7 +8,7 @@ Homepage: https://github.com/onedata/fs-onedatafs
 
 Package: python-fs-plugin-onedatafs
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-onedatafs (= {{onedatafs_version}})
+Depends: ${misc:Depends}, ${python:Depends}, python-onedatafs (>= {{onedatafs_version}})
 Description: Onedata filesystem for PyFilesystem2
  OnedataFS is an implementation of PyFilesystem interface to Onedata
  virtual file system. OnedataFS allows you to work with Onedata using
@@ -16,7 +16,7 @@ Description: Onedata filesystem for PyFilesystem2
 
 Package: python3-fs-plugin-onedatafs
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python3-onedatafs (= {{onedatafs_version}})
+Depends: ${misc:Depends}, ${python:Depends}, python3-onedatafs (>= {{onedatafs_version}})
 Description: Onedata filesystem for PyFilesystem2
  OnedataFS is an implementation of PyFilesystem interface to Onedata
  virtual file system. OnedataFS allows you to work with Onedata using
