@@ -1,2 +1,2 @@
 .pybuild/pythonX.Y_2.7/build/fs/onedatafs/* usr/lib/python2.7/dist-packages/fs/onedatafs/
-pkg_config/data/__init__.py usr/lib/python2.7/dist-packages/fs/__init__.py
+pkg_config/data/__init__.py usr/lib/python2.7/dist-packages/fs/
