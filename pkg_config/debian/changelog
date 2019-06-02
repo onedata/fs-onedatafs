@@ -1,0 +1,7 @@
+fs-onedatafs ({{version}}-1) unstable; urgency=low
+
+  * Build from {{version}}
+
+ -- Onedata Package Maintainer <support@onedata.org>  {{date}}
+
+
