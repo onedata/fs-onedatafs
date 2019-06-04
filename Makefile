@@ -18,7 +18,7 @@ PKG_ID             = fs-onedatafs-$(PKG_VERSION)
 .PHONY: check_distribution
 check_distribution:
 ifeq ($(DISTRIBUTION), none)
-	@echo "Please provide package distribution. Oneof: 'trusty', 'wily', 'xenial', 'centos-7-x86_64', 'fedora-23-x86_64'"
+	@echo "Please provide package distribution. Oneof: 'trusty', 'xenial', 'bionic', 'centos-7-x86_64'"
 	@exit 1
 else
 	@echo "Building package for distribution $(DISTRIBUTION)"
@@ -95,10 +95,10 @@ deb: check_distribution package/$(PKG_ID).tar.gz
 	sed -i "s/{{date}}/`date -R`/g" package/$(PKG_ID)/debian/changelog
 	sed -i "s/{{onedatafs_version}}/$(ONECLIENT_VERSION)/g" package/$(PKG_ID)/debian/control
 
-	cd package/$(PKG_ID) && sg sbuild -c "sbuild -sd $(DISTRIBUTION) -j6"
+	cd package/$(PKG_ID) && sg sbuild -c "sbuild -sd $(DISTRIBUTION) -j$$(nproc)"
 	mv package/*$(PKG_VERSION).orig.tar.gz package/packages/
 	mv package/*$(PKG_VERSION)-$(PKG_BUILD)*.deb package/packages/
-	mv package/*$(PKG_VERSION)-$(PKG_BUILD).dsc package/packages/
-	mv package/*$(PKG_VERSION)-$(PKG_BUILD)_amd64.changes package/packages/
-	-mv package/*$(PKG_VERSION)-$(PKG_BUILD).debian.tar.xz package/packages/ || true
+	mv package/*$(PKG_VERSION)-$(PKG_BUILD)*.dsc package/packages/
+	mv package/*$(PKG_VERSION)-$(PKG_BUILD)*_amd64.changes package/packages/
+	-mv package/*$(PKG_VERSION)-$(PKG_BUILD)*.debian.tar.xz package/packages/ || true
 
