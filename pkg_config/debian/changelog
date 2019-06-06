@@ -1,4 +1,4 @@
-fs-onedatafs ({{version}}-1) unstable; urgency=low
+fs-onedatafs ({{version}}-1~{{distribution}}) {{distribution}}; urgency=low
 
   * Build from {{version}}
 
