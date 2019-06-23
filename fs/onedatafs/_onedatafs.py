@@ -35,7 +35,7 @@ import six
 
 import onedatafs # noqa
 
-from ._util import ensure_unicode, stat_to_permissions, to_ascii
+from ._util import ensure_unicode, info_to_stat, stat_to_permissions, to_ascii
 
 
 class OnedataSubFS(SubFS):
@@ -702,9 +702,15 @@ class OnedataFS(FS):
         """
         # type: (Text, Info) -> None
 
+        if not self.exists(path):
+            raise ResourceNotFound(path)
+
         path = ensure_unicode(path)
-        # TODO
-        self.getinfo(path)
+        _path = to_ascii(self.validatepath(path))
+
+        stat, to_set = info_to_stat(info)
+
+        self._odfs.setattr(_path, stat, to_set)
 
     def move(self, src_path, dst_path, overwrite=False):
         """
