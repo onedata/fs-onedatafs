@@ -168,12 +168,13 @@ class OnedataFile(io.RawIOBase):
                     read_size = min(DEFAULT_CHUNK_SIZE, remaining)
 
                 chunk = self.handle.read(self.pos, read_size)
-                if chunk == b"":
+                if not chunk:
                     break
                 chunks.append(chunk)
                 self.pos += len(chunk)
                 remaining -= len(chunk)
-        return b"".join(chunks)
+
+        return b''.join(chunks)
 
     def readline(self, size=-1):
         """
@@ -261,14 +262,13 @@ class OnedataFile(io.RawIOBase):
         # type: (Optional[int]) -> int
 
         if size is None:
-            size = 0
+            size = self.pos
 
         _path = self.path.encode("ascii", "replace")
-        old_size = self.odfs.stat(_path).size
 
         self.odfs.truncate(_path, size)
 
-        return abs(old_size - size)
+        return self.odfs.stat(_path).size
 
     def seekable(self):
         """Return `True` if the file is seekable."""
@@ -466,7 +466,8 @@ class OnedataFS(FS):
         path = ensure_unicode(path)
         self.check()
         namespaces = namespaces or ()
-        _path = self.validatepath(path).encode("ascii", "replace")
+        path = self.validatepath(path)
+        _path = path.encode("ascii", "replace") if six.PY2 else path
 
         try:
             attr = self._odfs.stat(_path)
@@ -500,7 +501,7 @@ class OnedataFS(FS):
         info["access"] = {
             "uid": attr.uid,
             "gid": attr.gid,
-            "permissions": stat_to_permissions(attr).as_str(),
+            "permissions": stat_to_permissions(attr).dump(),
         }
 
         return Info(info)
@@ -516,6 +517,8 @@ class OnedataFS(FS):
         :type path: string
         """
         # type: (Text) -> OnedataSubFS
+
+        path = ensure_unicode(path)
 
         if not self.exists(path):
             raise ResourceNotFound(path)
@@ -549,7 +552,7 @@ class OnedataFS(FS):
             except ResourceNotFound:
                 if _mode.reading:
                     raise ResourceNotFound(path)
-                if _mode.writing and not self.isdir(dirname(_path)):
+                if _mode.writing and not self.isdir(dirname(path)):
                     raise ResourceNotFound(path)
             else:
                 if info.is_dir:
@@ -620,15 +623,13 @@ class OnedataFS(FS):
         if self.exists(path) and not recreate:
             raise DirectoryExists(path)
 
-        if not self.isdir(dirname(_path)):
+        if not self.isdir(dirname(path)):
             raise ResourceNotFound(path)
 
         if permissions is None:
-            permissions = Permissions(user="rwx", group="r-x", other="r-x")
+            permissions = Permissions(user="rwx", group="rwx", other="r-x")
 
-        try:
-            self.getinfo(path)
-        except ResourceNotFound:
+        if not self.exists(path):
             self._odfs.mkdir(_path, permissions.mode)
 
         return SubFS(self, path)

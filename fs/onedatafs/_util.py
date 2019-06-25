@@ -88,10 +88,10 @@ def info_to_stat(info):
             attr.size = info['details']['size']
             to_set = to_set | FUSE_SET_ATTR_SIZE
         if 'accessed' in info['details']:
-            attr.atime = info['details']['accessed']
+            attr.atime = int(info['details']['accessed'])
             to_set = to_set | FUSE_SET_ATTR_ATIME
         if 'modified' in info['details']:
-            attr.mtime = info['details']['modified']
+            attr.mtime = int(info['details']['modified'])
             to_set = to_set | FUSE_SET_ATTR_MTIME
     if 'access' in info:
         if 'permissions' in info['access']:
