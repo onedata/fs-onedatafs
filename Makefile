@@ -25,6 +25,11 @@ else
 endif
 
 
+.PHONY: submodules
+submodules:
+	git submodule sync --recursive ${submodule}
+	git submodule update --init --recursive ${submodule}
+
 .PHONY: readme
 readme:
 	pandoc --from=markdown --to=rst --output=README.rst README.md
