@@ -20,6 +20,12 @@ from fs.permissions import Permissions
 import six
 
 
+FUSE_SET_ATTR_MODE = (1 << 0)
+FUSE_SET_ATTR_SIZE = (1 << 3)
+FUSE_SET_ATTR_ATIME = (1 << 4)
+FUSE_SET_ATTR_MTIME = (1 << 5)
+
+
 def stat_to_permissions(attr):
     """
     Convert PyFilesystem Info instance `attr` to permissions string.
@@ -56,6 +62,43 @@ def stat_to_permissions(attr):
         setuid=setuid,
         setguid=setguid,
     )
+
+
+def info_to_stat(info):
+    """
+    Convert PyFilesystem Info instance to Stat structure.
+
+    Only the following attributes from the Info structure can
+    be updated in Onedata:
+       - mode (i.e. permissions)
+       - size
+       - atime
+       - mtime
+    Only these parameters are added to the returned Stat instance.
+
+    :param Info info: The PyFilesystem Info instance.
+    """
+    from onedatafs import Stat # noqa
+
+    attr = Stat()
+    to_set = 0
+
+    if 'details' in info:
+        if 'size' in info['details']:
+            attr.size = info['details']['size']
+            to_set = to_set | FUSE_SET_ATTR_SIZE
+        if 'accessed' in info['details']:
+            attr.atime = int(info['details']['accessed'])
+            to_set = to_set | FUSE_SET_ATTR_ATIME
+        if 'modified' in info['details']:
+            attr.mtime = int(info['details']['modified'])
+            to_set = to_set | FUSE_SET_ATTR_MTIME
+    if 'access' in info:
+        if 'permissions' in info['access']:
+            attr.mode = Permissions(info['access']['permissions']).mode
+            to_set = to_set | FUSE_SET_ATTR_MODE
+
+    return (attr, to_set)
 
 
 def ensure_unicode(path):

@@ -21,7 +21,7 @@ from typing import Any, BinaryIO, Iterable, Optional, SupportsInt, Text
 from fs.base import FS
 from fs.constants import DEFAULT_CHUNK_SIZE
 from fs.enums import ResourceType, Seek
-from fs.errors import DirectoryExpected, DirectoryNotEmpty
+from fs.errors import DirectoryExists, DirectoryExpected, DirectoryNotEmpty
 from fs.errors import FileExists, FileExpected
 from fs.errors import RemoveRootError, ResourceInvalid, ResourceNotFound
 from fs.info import Info
@@ -35,7 +35,7 @@ import six
 
 import onedatafs # noqa
 
-from ._util import ensure_unicode, stat_to_permissions, to_ascii
+from ._util import ensure_unicode, info_to_stat, stat_to_permissions, to_ascii
 
 
 class OnedataSubFS(SubFS):
@@ -168,12 +168,13 @@ class OnedataFile(io.RawIOBase):
                     read_size = min(DEFAULT_CHUNK_SIZE, remaining)
 
                 chunk = self.handle.read(self.pos, read_size)
-                if chunk == b"":
+                if not chunk:
                     break
                 chunks.append(chunk)
                 self.pos += len(chunk)
                 remaining -= len(chunk)
-        return b"".join(chunks)
+
+        return b''.join(chunks)
 
     def readline(self, size=-1):
         """
@@ -261,9 +262,13 @@ class OnedataFile(io.RawIOBase):
         # type: (Optional[int]) -> int
 
         if size is None:
-            size = 0
-        self.odfs.truncate(self.path, size)
-        return size
+            size = self.pos
+
+        _path = self.path.encode("ascii", "replace")
+
+        self.odfs.truncate(_path, size)
+
+        return self.odfs.stat(_path).size
 
     def seekable(self):
         """Return `True` if the file is seekable."""
@@ -286,8 +291,22 @@ class OnedataFile(io.RawIOBase):
         if _whence not in (Seek.set, Seek.current, Seek.end):
             raise ValueError("invalid value for whence")
 
+        if _whence == Seek.current or _whence == Seek.set:
+            if pos < 0:
+                raise ValueError("Negative seek position {}".format(pos))
+        elif _whence == Seek.end:
+            if pos > 0:
+                raise ValueError("Positive seek position {}".format(pos))
+
         with self._lock:
-            self.pos = pos
+            if _whence == Seek.set:
+                self.pos = pos
+            if _whence == Seek.current:
+                self.pos = self.pos + pos
+            if _whence == Seek.end:
+                _path = self.path.encode("ascii", "replace")
+                size = self.odfs.stat(_path).size
+                self.pos = size + pos
 
         return self.tell()
 
@@ -447,15 +466,16 @@ class OnedataFS(FS):
         path = ensure_unicode(path)
         self.check()
         namespaces = namespaces or ()
-        _path = self.validatepath(path).encode("ascii", "replace")
+        path = self.validatepath(path)
+        _path = path.encode("ascii", "replace") if six.PY2 else path
 
         try:
             attr = self._odfs.stat(_path)
-        except RuntimeError as error:
-            if str(error) == "No such file or directory":
-                raise ResourceNotFound(path)
-            raise error
+        except RuntimeError:
+            raise ResourceNotFound(path)
 
+        # `info` must be JSON serializable dictionary, so all
+        # values must be valid JSON types
         info = {
             "basic": {
                 "name": basename(_path),
@@ -475,13 +495,13 @@ class OnedataFS(FS):
             "size": attr.size,
             "uid": attr.uid,
             "gid": attr.gid,
-            "type": rt,
+            "type": int(rt),
         }
 
         info["access"] = {
             "uid": attr.uid,
             "gid": attr.gid,
-            "permissions": stat_to_permissions(attr),
+            "permissions": stat_to_permissions(attr).dump(),
         }
 
         return Info(info)
@@ -497,6 +517,8 @@ class OnedataFS(FS):
         :type path: string
         """
         # type: (Text) -> OnedataSubFS
+
+        path = ensure_unicode(path)
 
         if not self.exists(path):
             raise ResourceNotFound(path)
@@ -521,23 +543,30 @@ class OnedataFS(FS):
         _mode = Mode(mode)
         _mode.validate_bin()
         _path = to_ascii(self.validatepath(path))
+        seek = 0
 
         with self._lock:
             try:
-                info = self.getinfo(path)
+                info = self.getinfo(path, namespaces=['details'])
+                seek = info.size
             except ResourceNotFound:
                 if _mode.reading:
                     raise ResourceNotFound(path)
-                if _mode.writing and not self.isdir(dirname(_path)):
+                if _mode.writing and not self.isdir(dirname(path)):
                     raise ResourceNotFound(path)
             else:
                 if info.is_dir:
                     raise FileExpected(path)
                 if _mode.exclusive:
                     raise FileExists(path)
-            # TODO support mode
+                if _mode.truncate:
+                    self._odfs.truncate(_path, 0)
+
             handle = self._odfs.open(_path)
             onedata_file = OnedataFile(self._odfs, handle, path, mode)
+            if _mode.appending:
+                onedata_file.seek(seek)
+
         return onedata_file  # type: ignore
 
     def listdir(self, path):
@@ -551,6 +580,13 @@ class OnedataFS(FS):
         # type: (Text) -> list
 
         path = ensure_unicode(path)
+
+        if not self.exists(path):
+            raise ResourceNotFound(path)
+
+        if self.isfile(path):
+            raise DirectoryExpected(path)
+
         _path = to_ascii(self.validatepath(path))
 
         _directory = set()
@@ -563,7 +599,7 @@ class OnedataFS(FS):
                 break
 
             for dir_entry in batch:
-                _directory.add(dir_entry)
+                _directory.add(ensure_unicode(dir_entry))
 
             offset += len(batch)
             batch = self._odfs.readdir(_path, batch_size, offset)
@@ -584,15 +620,16 @@ class OnedataFS(FS):
         self.check()
         _path = to_ascii(self.validatepath(path))
 
-        if not self.isdir(dirname(_path)):
+        if self.exists(path) and not recreate:
+            raise DirectoryExists(path)
+
+        if not self.isdir(dirname(path)):
             raise ResourceNotFound(path)
 
         if permissions is None:
-            permissions = Permissions(user="rwx", group="r-x", other="r-x")
+            permissions = Permissions(user="rwx", group="rwx", other="r-x")
 
-        try:
-            self.getinfo(path)
-        except ResourceNotFound:
+        if not self.exists(path):
             self._odfs.mkdir(_path, permissions.mode)
 
         return SubFS(self, path)
@@ -626,7 +663,8 @@ class OnedataFS(FS):
         path = ensure_unicode(path)
         self.check()
         _path = to_ascii(self.validatepath(path))
-        return self._odfs.readdir(_path, 1, 0)
+
+        return len(self._odfs.readdir(_path, 2, 0)) == 0
 
     def removedir(self, path):
         """
@@ -649,7 +687,12 @@ class OnedataFS(FS):
         if not self.isempty(path):
             raise DirectoryNotEmpty(path)
 
-        self._odfs.unlink(_path)
+        try:
+            self._odfs.unlink(_path)
+        except RuntimeError as error:
+            if str(error) == "Directory not empty":
+                raise DirectoryNotEmpty(path)
+            raise error
 
     def setinfo(self, path, info):
         """
@@ -660,9 +703,15 @@ class OnedataFS(FS):
         """
         # type: (Text, Info) -> None
 
+        if not self.exists(path):
+            raise ResourceNotFound(path)
+
         path = ensure_unicode(path)
-        # TODO
-        self.getinfo(path)
+        _path = to_ascii(self.validatepath(path))
+
+        stat, to_set = info_to_stat(info)
+
+        self._odfs.setattr(_path, stat, to_set)
 
     def move(self, src_path, dst_path, overwrite=False):
         """
@@ -675,11 +724,20 @@ class OnedataFS(FS):
         """
         # type: (Text, Text, bool) -> None
 
-        src_path = ensure_unicode(src_path)
-        dst_path = ensure_unicode(dst_path)
+        if not self.exists(src_path):
+            raise ResourceNotFound(src_path)
+
+        if dirname(dst_path) and not self.exists(dirname(dst_path)):
+            raise ResourceNotFound(src_path)
+
+        if self.isdir(src_path):
+            raise FileExpected(src_path)
 
         if not overwrite and self.exists(dst_path):
             raise FileExists(dst_path)
+
+        src_path = ensure_unicode(src_path)
+        dst_path = ensure_unicode(dst_path)
 
         self._odfs.rename(to_ascii(src_path), to_ascii(dst_path))
 
