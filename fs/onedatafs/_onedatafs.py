@@ -62,7 +62,8 @@ class OnedataSubFS(SubFS):
         """Call :func:`~OnedataFS.setxattr`."""
         # type: (Text, Text, bytes) -> None
 
-        return self.delegate_fs().setxattr(self.delegate_path(path)[1], name)
+        return self.delegate_fs().setxattr(
+            self.delegate_path(path)[1], name, value)
 
     def removexattr(self, path, name):
         """Call :func:`~OnedataFS.removexattr`."""
@@ -802,7 +803,7 @@ class OnedataFS(FS):
 
         self.getinfo(path)
 
-        return self._odfs.getxattr(_path, _name)
+        return self._odfs.setxattr(_path, _name, value)
 
     def removexattr(self, path, name):
         """
