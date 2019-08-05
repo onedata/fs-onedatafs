@@ -286,28 +286,29 @@ class OnedataFile(io.RawIOBase):
 
         :param int pos: New position in the file.
         """
-        # type: (int, SupportsInt) -> int
+        # type: (SupportsInt, SupportsInt) -> int
 
         _whence = int(whence)
+        _pos = int(pos)
         if _whence not in (Seek.set, Seek.current, Seek.end):
             raise ValueError("invalid value for whence")
 
         if _whence == Seek.current or _whence == Seek.set:
-            if pos < 0:
-                raise ValueError("Negative seek position {}".format(pos))
+            if _pos < 0:
+                raise ValueError("Negative seek position {}".format(_pos))
         elif _whence == Seek.end:
-            if pos > 0:
-                raise ValueError("Positive seek position {}".format(pos))
+            if _pos > 0:
+                raise ValueError("Positive seek position {}".format(_pos))
 
         with self._lock:
             if _whence == Seek.set:
-                self.pos = pos
+                self.pos = _pos
             if _whence == Seek.current:
-                self.pos = self.pos + pos
+                self.pos = self.pos + _pos
             if _whence == Seek.end:
                 _path = self.path.encode("ascii", "replace")
                 size = self.odfs.stat(_path).size
-                self.pos = size + pos
+                self.pos = size + _pos
 
         return self.tell()
 
