@@ -15,12 +15,15 @@ requirements:
     - fs
     - setuptools
     - six
-
   run:
     - python {{ python }}
     - fs
     - six
     - onedatafs ={{ onedatafs_version|replace('-', '.') }}
+
+test:
+  commands:
+    - python -c "from fs.onedatafs import OnedataFS"
 
 about:
   home: https://onedata.org
