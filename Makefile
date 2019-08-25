@@ -107,3 +107,17 @@ deb: check_distribution package/$(PKG_ID).tar.gz
 	mv package/*$(PKG_VERSION)-$(PKG_BUILD)*_amd64.changes package/packages/
 	-mv package/*$(PKG_VERSION)-$(PKG_BUILD)*.debian.tar.xz package/packages/ || true
 
+.PHONY: conda
+conda: SHELL:=/bin/bash
+conda: package/$(PKG_ID).tar.gz
+	cp /tmp/.condarc $$HOME/.condarc
+	cat $$HOME/.condarc
+	mkdir -p package/conda
+	mkdir -p package/conda-bld
+	cp conda/* package/conda/
+	sed -i "s|<<PKG_VERSION>>|$(PKG_VERSION)|g" package/conda/meta.yaml
+	sed -i "s|<<ONECLIENT_VERSION>>|$(ONECLIENT_VERSION)|g" package/conda/meta.yaml
+	sed -i "s|<<PKG_SOURCE>>|../$(PKG_ID).tar.gz|g" package/conda/meta.yaml
+	source /opt/conda/bin/activate base && \
+		PKG_VERSION=$(PKG_VERSION) CONDA_BLD_PATH=$$PWD/package/conda-bld \
+		conda build --user onedata-devel --token "${CONDA_TOKEN}" package/conda

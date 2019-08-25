@@ -1,0 +1,32 @@
+{% set name = "fs.onedatafs" %}
+{% set version = "<<PKG_VERSION>>" %}
+{% set onedatafs_version = "<<ONECLIENT_VERSION>>" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version|replace('-', '.') }}
+
+source:
+  url: "<<PKG_SOURCE>>"
+
+requirements:
+  build:
+    - python {{ python }}
+    - fs
+    - setuptools
+    - six
+
+  run:
+    - python {{ python }}
+    - fs
+    - six
+    - onedatafs ={{ onedatafs_version|replace('-', '.') }}
+
+about:
+  home: https://onedata.org
+  license: MIT
+  summary: fs.onedatafs is a PyFilesystem interface to Onedata virtual file system.
+
+extra:
+  recipe-maintainers:
+    - bkryza
