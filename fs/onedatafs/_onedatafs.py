@@ -594,6 +594,7 @@ class OnedataFS(FS):
         _directory = set()
         offset = 0
         batch_size = 2500
+        d = self._odfs.opendir(_path)
         batch = self._odfs.readdir(_path, batch_size, offset)
 
         while True:
@@ -606,6 +607,7 @@ class OnedataFS(FS):
             offset += len(batch)
             batch = self._odfs.readdir(_path, batch_size, offset)
 
+        self._odfs.releasedir(_path, d)
         return list(_directory)
 
     def makedir(self, path, permissions=None, recreate=False):
