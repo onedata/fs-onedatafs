@@ -345,7 +345,10 @@ class OnedataFS(FS):
         no_buffer=False,  # type: bool
         io_trace_log=False,  # type: bool
         provider_timeout=30,  # type: int
-        log_dir=None,  # type: Text
+        metadata_cache_size=5000000, # type: int
+        drop_directory_cache_after=300, # type: int
+        log_level=0,  # type: int
+        cli_args="" # type: Text
     ):
         """
         Onedata client OnedataFS constructor.
@@ -379,9 +382,14 @@ class OnedataFS(FS):
                                   specified by `log_dir`.
         :param int provider_timeout: Specifies the timeout for waiting for
                                      Oneprovider responses, in seconds.
-        :param str log_dir: Path in the filesystem, where internal OnedataFS
-                            logs should be stored. When `None`, no logging will
-                            be generated.
+        :param int metadata_cache_size: The maximum number of file attribute
+                                        cache entries.
+        :param int drop_directory_cache_after: Time in seconds after stale
+                                               directories should be purged
+                                               from metadata cache.
+        :param int log_level: Logging verbosity.
+        :param str cli_args: Other oneclient arguments specified as on
+                             command line.
         """
         # type: (...) -> OnedataFS
 
@@ -396,6 +404,10 @@ class OnedataFS(FS):
         self._no_buffer = no_buffer
         self._io_trace_log = io_trace_log
         self._provider_timeout = provider_timeout
+        self._metadata_cache_size = metadata_cache_size
+        self._drop_directory_cache_after = drop_directory_cache_after
+        self._log_level = log_level
+        self._cli_args = cli_args
         self._tlocal = threading.local()
 
         self._odfs = onedatafs.OnedataFS(
@@ -409,6 +421,10 @@ class OnedataFS(FS):
             no_buffer=self._no_buffer,
             io_trace_log=self._io_trace_log,
             provider_timeout=self._provider_timeout,
+            metadata_cache_size=self._metadata_cache_size,
+            drop_directory_cache_after=self._drop_directory_cache_after,
+            log_level=self._log_level,
+            cli_args=self._cli_args
         )
 
         super(OnedataFS, self).__init__()
