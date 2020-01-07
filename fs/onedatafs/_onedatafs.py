@@ -420,7 +420,7 @@ class OnedataFS(FS):
             metadata_cache_size=self._metadata_cache_size,
             drop_dir_cache_after=self._drop_dir_cache_after,
             log_level=self._log_level,
-            cli_args=self._cli_args,
+            cli_args=str(self._cli_args),
         )
 
         super(OnedataFS, self).__init__()
