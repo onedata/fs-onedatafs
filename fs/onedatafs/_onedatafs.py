@@ -177,6 +177,23 @@ class OnedataFile(io.RawIOBase):
 
         return b''.join(chunks)
 
+    def readinto(self, buf):
+        """
+        Read from the file into the buffer.
+
+        Read `len(buf)` bytes from the file starting from current position
+        and place the data in the `buf` buffer.
+
+        :param bytearray buf: Buffer where the read data will be stored.
+        """
+        # type: (bytes) -> int
+
+        data = self.read(len(buf))
+        bytes_read = len(data)
+        buf[:len(data)] = data
+
+        return bytes_read
+
     def readline(self, size=-1):
         """
         Read a single line from file.
@@ -227,6 +244,12 @@ class OnedataFile(io.RawIOBase):
 
         if not self.mode.writing:
             raise IOError("File not open for writing")
+
+        if hasattr(data, '__pyx_getbuffer'):
+            data = memoryview(data)
+
+        if isinstance(data, memoryview):
+            data = data.tobytes()
 
         with self._lock:
             if six.PY2 and isinstance(data, unicode):  # noqa
