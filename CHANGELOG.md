@@ -4,6 +4,8 @@ Release notes for project fs-onedatafs
 CHANGELOG
 ---------
 
+### 20.02.2
+
 ### 20.02.1
 
 ### 20.02.0-beta4
