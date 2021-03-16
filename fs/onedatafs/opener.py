@@ -32,8 +32,18 @@ class OnedataFSOpener(Opener):
             raise "Invalid OnedataFS scheme"
 
         host = ofs.hostname
-        port = ofs.port
-        token = parse_qs(ofs.query)["token"]
+        port = ofs.port or 443
+        args = parse_qs(ofs.query)
+        token = args["token"][0]
+        del args["token"]
+        cli_args = ""
+        for k in args:
+            v = args[k][0]
+            if v == 'false':
+                continue
+            elif v == 'true':
+                cli_args += " --" + k
+            else:
+                cli_args += " --" + k + " " + v
 
-        onedatafs = OnedataFS(host, token, port=port)
-        return onedatafs
+        return OnedataFS(host, token, port=port, cli_args=cli_args)
