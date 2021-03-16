@@ -40,5 +40,7 @@ setup(
     test_suite="nose.collector",
     url="https://github.com/onedata/fs-onedatafs",
     version=__version__,
-    entry_points={"fs.opener": ["odfs = fs.onedatafs.opener:OnedataFSOpener"]},
+    entry_points={
+        "fs.opener": ["onedatafs = fs.onedatafs.opener:OnedataFSOpener"]
+    },
 )
