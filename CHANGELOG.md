@@ -6,6 +6,11 @@ CHANGELOG
 
 ### 20.02.7
 
+-   **VFS-7466** Fixed PyFilesystem opener entrypoint allowing to create
+    OnedataFS instances in Python using urls of the form
+    'onedatafs://HOST:PORT?token=...'.
+
+
 ### 20.02.6
 
 -   **VFS-7119** Dropped support for OnedataFS Anaconda packages for
