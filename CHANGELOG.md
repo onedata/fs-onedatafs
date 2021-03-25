@@ -8,15 +8,17 @@ CHANGELOG
 
 ### 21.02.0-alpha5
 
--   **VFS-7466** Fixed PyFilesystem opener entrypoint allowing to create
-    OnedataFS instances in Python using urls of the form
-    \'onedatafs://HOST:PORT?token=\...\'.
-
 ### 21.02.0-alpha4
 
 ### 21.02.0-alpha3
 
 ### 21.02.0-alpha2
+
+### 20.02.7
+
+-   **VFS-7466** Fixed PyFilesystem opener entrypoint allowing to create
+    OnedataFS instances in Python using urls of the form
+    \'onedatafs://HOST:PORT?token=\...\'.
 
 ### 20.02.6
 
