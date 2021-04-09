@@ -4,6 +4,8 @@ Release notes for project fs-onedatafs
 CHANGELOG
 ---------
 
+### 20.02.8
+
 ### 20.02.7
 
 -   **VFS-7466** Fixed PyFilesystem opener entrypoint allowing to create
