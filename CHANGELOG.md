@@ -16,6 +16,8 @@ CHANGELOG
 
 ### 21.02.0-alpha2
 
+### 20.02.8
+
 ### 20.02.7
 
 -   **VFS-7466** Fixed PyFilesystem opener entrypoint allowing to create
