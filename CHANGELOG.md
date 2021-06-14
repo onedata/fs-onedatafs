@@ -4,6 +4,30 @@ Release notes for project fs-onedatafs
 CHANGELOG
 ---------
 
+### 21.02.0-alpha13
+
+### 21.02.0-alpha12
+
+### 21.02.0-alpha11
+
+### 21.02.0-alpha10
+
+### 21.02.0-alpha9
+
+### 21.02.0-alpha8
+
+### 21.02.0-alpha7
+
+### 21.02.0-alpha6
+
+### 21.02.0-alpha5
+
+### 21.02.0-alpha4
+
+### 21.02.0-alpha3
+
+### 21.02.0-alpha2
+
 ### 20.02.10
 
 ### 20.02.9
@@ -14,8 +38,7 @@ CHANGELOG
 
 -   **VFS-7466** Fixed PyFilesystem opener entrypoint allowing to create
     OnedataFS instances in Python using urls of the form
-    'onedatafs://HOST:PORT?token=...'.
-
+    \'onedatafs://HOST:PORT?token=\...\'.
 
 ### 20.02.6
 
