@@ -4,6 +4,8 @@ Release notes for project fs-onedatafs
 CHANGELOG
 ---------
 
+### 21.02.0-alpha24
+
 ### 21.02.0-alpha23
 
 -   **VFS-8318** Fixed conda packaging for oneclient and onedatafs,
