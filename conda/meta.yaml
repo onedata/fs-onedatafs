@@ -11,14 +11,14 @@ source:
 
 requirements:
   build:
-    - python {{ python }}
-    - fs
-    - setuptools
-    - six
+    - conda-forge::python {{ python }}
+    - conda-forge::fs =2.4.*
+    - conda-forge::setuptools
+    - conda-forge::six
   run:
-    - python {{ python }}
-    - fs
-    - six
+    - conda-forge::python {{ python }}
+    - conda-forge::fs =2.4.*
+    - conda-forge::six
     - onedatafs ={{ onedatafs_version|replace('-', '.') }}
 
 test:
