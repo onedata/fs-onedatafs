@@ -564,7 +564,7 @@ class OnedataFS(FS):
                 "Path {} should reference a directory".format(path,))
         return OnedataSubFS(self, path)
 
-    def openbin(self, path, mode="r", buffering=-1, **options):
+    def openbin(self, path, mode="rb", buffering=-1, **options):
         """
         Open file under `path` in binary mode.
 
@@ -600,7 +600,8 @@ class OnedataFS(FS):
                     self._odfs.truncate(_path, 0)
 
             handle = self._odfs.open(_path)
-            onedata_file = OnedataFile(self._odfs, handle, path, mode)
+            onedata_file = OnedataFile(self._odfs, handle, path,
+                                       _mode.to_platform_bin())
             if _mode.appending:
                 onedata_file.seek(seek)
 
@@ -752,7 +753,7 @@ class OnedataFS(FS):
 
         self._odfs.setattr(_path, stat, to_set)
 
-    def move(self, src_path, dst_path, overwrite=False):
+    def move(self, src_path, dst_path, overwrite=False, preserve_time=False):
         """
         Rename file from `src_path` to `dst_path`.
 
@@ -760,8 +761,10 @@ class OnedataFS(FS):
         :param str dst_path: The new file path
         :param bool overwrite: When `True`, existing file at `dst_path` will be
                                replaced by contents of file at `src_path`
+        :param bool preserve_time: If `True`, try to preserve mtime of the
+                                   resources (defaults to `False`).
         """
-        # type: (Text, Text, bool) -> None
+        # type: (Text, Text, bool, bool) -> None
 
         if not self.exists(src_path):
             raise ResourceNotFound(src_path)
