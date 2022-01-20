@@ -462,6 +462,16 @@ class OnedataFS(FS):
             self._host, self._port, self.session_id()
         )
 
+    def close(self):
+        """
+        Close the OnedataFS instance.
+
+        This operation may invoke flushing of internal buffers.
+        """
+        # type: () -> None
+
+        self._odfs.close()
+
     def session_id(self):
         """
         Get Onedata session id.
