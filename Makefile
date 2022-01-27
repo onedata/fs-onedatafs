@@ -5,8 +5,8 @@ DOCKER_RELEASE        ?= development
 DOCKER_REG_NAME       ?= "docker.onedata.org"
 DOCKER_REG_USER       ?= ""
 DOCKER_REG_PASSWORD   ?= ""
-DOCKER_BASE_IMAGE     ?= "ubuntu:16.04"
-DOCKER_DEV_BASE_IMAGE ?= "onedata/worker:1802-1"
+DOCKER_BASE_IMAGE     ?= "ubuntu:18.04"
+DOCKER_DEV_BASE_IMAGE ?= "onedata/worker:2102-6"
 
 PKG_REVISION      ?= $(shell git describe --tags --always)
 PKG_VERSION       ?= $(shell git describe --tags --always | tr - .)
@@ -64,23 +64,14 @@ package/$(PKG_ID).tar.gz:
 rpm: check_distribution package/$(PKG_ID).tar.gz
 	rm -rf package/packages && mkdir -p package/packages
 
-	cp pkg_config/fs-onedatafs-py2.spec package/fs-onedatafs-py2.spec
 	cp pkg_config/fs-onedatafs-py3.spec package/fs-onedatafs-py3.spec
 	cp pkg_config/data/__init__.py package/__init__.py
 
 	patch -d package/ -p1 -i $(PKG_ID)/pkg_config/$(DISTRIBUTION).patch
 
-	sed -i "s/{{version}}/$(PKG_VERSION)/g" package/fs-onedatafs-py2.spec
-	sed -i "s/{{onedatafs_version}}/$(ONECLIENT_VERSION)/g" package/fs-onedatafs-py2.spec
-	sed -i "s/{{build}}/$(PKG_BUILD)/g" package/fs-onedatafs-py2.spec
 	sed -i "s/{{version}}/$(PKG_VERSION)/g" package/fs-onedatafs-py3.spec
 	sed -i "s/{{onedatafs_version}}/$(ONECLIENT_VERSION)/g" package/fs-onedatafs-py3.spec
 	sed -i "s/{{build}}/$(PKG_BUILD)/g" package/fs-onedatafs-py3.spec
-
-	mock --root $(DISTRIBUTION) --buildsrpm --spec package/fs-onedatafs-py2.spec --resultdir=package/packages \
-		--sources package
-	mock --root $(DISTRIBUTION) --resultdir=package/packages \
-		--rebuild package/packages/onedata$(RELEASE)-python2-$(PKG_ID)*.src.rpm
 
 	mock --root $(DISTRIBUTION) --buildsrpm --spec package/fs-onedatafs-py3.spec --resultdir=package/packages \
 		--sources package
