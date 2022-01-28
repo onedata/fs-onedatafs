@@ -15,7 +15,7 @@ You can install OnedataFS from pip as follows:
 
 ::
 
-   pip install fs-onedatafs
+   pip3 install fs-onedatafs
 
 Opening a OnedataFS
 -------------------
