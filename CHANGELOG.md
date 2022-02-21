@@ -4,6 +4,16 @@ Release notes for project fs-onedatafs
 CHANGELOG
 ---------
 
+### 21.02.0-alpha25
+
+-   **VFS-8872** Dropped support for Python2 in OnedataFS.
+-   **VFS-8862** Update conda package dependencies to conda-forge and
+    Python 3.9.
+-   **VFS-8823** Fixed improper destruction of OnedataFS instances,
+    resulting in possible deadlocks during deletion of the OnedataFS
+    object.
+
+
 ### 21.02.0-alpha24
 
 ### 21.02.0-alpha23
