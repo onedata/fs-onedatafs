@@ -102,6 +102,7 @@ ENV/
 .mypy_cache/
 
 .vscode
+*.iml
 
 *.tar.gz
 /package
