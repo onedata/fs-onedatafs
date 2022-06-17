@@ -4,6 +4,8 @@ Release notes for project fs-onedatafs
 CHANGELOG
 ---------
 
+### 20.02.17
+
 ### 20.02.16
 
 -   **VFS-8828** Fixed conda packages for the stable branch 20.02.\*,
