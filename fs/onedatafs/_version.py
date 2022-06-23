@@ -7,4 +7,4 @@ __license__ = (
     "This software is released under the MIT license cited in " "LICENSE.txt"
 )
 
-__version__ = '21.02.0-alpha25'
+__version__ = '21.02.0-alpha26'
