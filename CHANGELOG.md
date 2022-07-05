@@ -68,6 +68,8 @@ CHANGELOG
 
 ### 21.02.0-alpha2
 
+### 20.02.17
+
 ### 20.02.16
 
 -   **VFS-8828** Fixed conda packages for the stable branch 20.02.\*,
