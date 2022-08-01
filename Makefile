@@ -1,12 +1,12 @@
 # distro for package building (oneof: xenial, centos-7-x86_64)
-RELEASE               ?= 1802
+RELEASE               ?= 2102
 DISTRIBUTION          ?= none
 DOCKER_RELEASE        ?= development
 DOCKER_REG_NAME       ?= "docker.onedata.org"
 DOCKER_REG_USER       ?= ""
 DOCKER_REG_PASSWORD   ?= ""
 DOCKER_BASE_IMAGE     ?= "ubuntu:18.04"
-DOCKER_DEV_BASE_IMAGE ?= "onedata/worker:2102-6"
+DOCKER_DEV_BASE_IMAGE ?= "onedata/worker:2102-7"
 
 PKG_REVISION      ?= $(shell git describe --tags --always)
 PKG_VERSION       ?= $(shell git describe --tags --always | tr - .)
