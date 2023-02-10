@@ -4,6 +4,8 @@ Release notes for project fs-onedatafs
 CHANGELOG
 ---------
 
+### 21.02.0-rc2
+
 ### 21.02.0-alpha28
 
 ### 21.02.0-alpha27
