@@ -4,6 +4,8 @@ Release notes for project fs-onedatafs
 CHANGELOG
 ---------
 
+### 20.02.20
+
 ### 20.02.19
 
 ### 20.02.18
