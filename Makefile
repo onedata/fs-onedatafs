@@ -1,12 +1,12 @@
 # distro for package building (oneof: xenial, centos-7-x86_64)
-RELEASE               ?= 1802
+RELEASE               ?= 2102
 DISTRIBUTION          ?= none
 DOCKER_RELEASE        ?= development
 DOCKER_REG_NAME       ?= "docker.onedata.org"
 DOCKER_REG_USER       ?= ""
 DOCKER_REG_PASSWORD   ?= ""
-DOCKER_BASE_IMAGE     ?= "ubuntu:18.04"
-DOCKER_DEV_BASE_IMAGE ?= "onedata/worker:2102-6"
+DOCKER_BASE_IMAGE     ?= "ubuntu:20.04"
+DOCKER_DEV_BASE_IMAGE ?= "onedata/worker:2102-8"
 
 PKG_REVISION      ?= $(shell git describe --tags --always)
 PKG_VERSION       ?= $(shell git describe --tags --always | tr - .)
@@ -91,7 +91,7 @@ deb: check_distribution package/$(PKG_ID).tar.gz
 	sed -i "s/{{date}}/`date -R`/g" package/$(PKG_ID)/debian/changelog
 	sed -i "s/{{onedatafs_version}}/$(ONECLIENT_VERSION)/g" package/$(PKG_ID)/debian/control
 
-	cd package/$(PKG_ID) && sg sbuild -c "sbuild -sd $(DISTRIBUTION) -j$$(nproc)"
+	cd package/$(PKG_ID) && sudo sg sbuild -c "sbuild -sd $(DISTRIBUTION) -j$$(nproc)"
 	mv package/*$(PKG_VERSION).orig.tar.gz package/packages/
 	mv package/*$(PKG_VERSION)-$(PKG_BUILD)*.deb package/packages/
 	mv package/*$(PKG_VERSION)-$(PKG_BUILD)*.dsc package/packages/
