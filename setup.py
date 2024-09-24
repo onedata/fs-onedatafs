@@ -3,7 +3,7 @@
 
 from setuptools import setup
 
-__version__ = '21.02.6'
+__version__ = '21.02.7'
 
 CLASSIFIERS = [
     "Development Status :: 4 - Beta",
