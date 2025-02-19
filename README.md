@@ -8,11 +8,7 @@ allows you to work with Onedata in the same way as any other supported filesyste
 
 ## Installing
 
-You can install OnedataFS from pip as follows:
-
-```
-pip install fs-onedatafs
-```
+See the [docs](https://onedata.org/#/home/documentation/21.02/user-guide/onedatafs.html).
 
 ## Opening a OnedataFS
 
@@ -32,6 +28,9 @@ Or with a FS URL:
   odfs = open_fs('onedatafs://HOST?token=...')
 ```
 
+Consult the [docs](https://onedata.org/#/home/documentation/21.02/user-guide/onedatafs[usage].html)
+for further information.
+
 ## Extended attributes
 
 Onedata FS supports in addition to standard PyFilesystem API operations
@@ -41,5 +40,5 @@ on metadata via POSIX compatible extended attributes API.
 ## Documentation
 
 - [PyFilesystem Wiki](https://www.pyfilesystem.org)
-- [OnedataFS Reference](http://fs-onedatafs.readthedocs.io/en/latest/)
 - [Onedata Homepage](https://onedata.org)
+- [OnedataFS Documentation](https://onedata.org/#/home/documentation/21.02/user-guide/onedatafs.html)
