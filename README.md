@@ -6,6 +6,17 @@ OnedataFS is a [PyFilesystem](https://www.pyfilesystem.org/) interface to
 As a PyFilesystem concrete class, [OnedataFS](https://github.com/onedata/fs-onedatafs/)
 allows you to work with Onedata in the same way as any other supported filesystem.
 
+## Lightweight alternative
+
+OnedataFS contains all C++ storage drivers for direct data access, a.k.a. 
+[DirectIO](https://onedata.org/#/home/documentation/21.02/user-guide/oneclient[direct-io-and-proxy-io-modes].html).
+Because of that, it cannot be installed using pip. If you are using ProxyIO
+(data access through a Oneprovider), consider using a lightweight cousin of 
+OnedataFS - [OnedataRESTFS](https://github.com/onedata/onedatarestfs). It has 
+identical functionality, can be installed using pip, and has minimal dependencies.
+OnedataRESTFS uses the Onedata REST API behind the scenes, yielding comparable 
+performance for ProxyIO data access mode.
+
 ## Installing
 
 See the [docs](https://onedata.org/#/home/documentation/21.02/user-guide/onedatafs.html).
