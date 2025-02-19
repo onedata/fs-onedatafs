@@ -35,8 +35,8 @@ odfs = OnedataFS(onedata_provider_host, onedata_access_token)
 Or with a FS URL:
 
 ```python
-  from fs import open_fs
-  odfs = open_fs('onedatafs://HOST?token=...')
+from fs import open_fs
+odfs = open_fs('onedatafs://HOST?token=...')
 ```
 
 Consult the [docs](https://onedata.org/#/home/documentation/21.02/user-guide/onedatafs[usage].html)
