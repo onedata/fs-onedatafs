@@ -21,7 +21,8 @@ from typing import Any, BinaryIO, Iterable, Optional, SupportsInt, Text
 from fs.base import FS
 from fs.constants import DEFAULT_CHUNK_SIZE
 from fs.enums import ResourceType, Seek
-from fs.errors import DirectoryExists, DirectoryExpected, DirectoryNotEmpty
+from fs.errors import DestinationExists, DirectoryExists
+from fs.errors import DirectoryExpected, DirectoryNotEmpty
 from fs.errors import FileExists, FileExpected
 from fs.errors import RemoveRootError, ResourceInvalid, ResourceNotFound
 from fs.info import Info
@@ -786,7 +787,7 @@ class OnedataFS(FS):
             raise FileExpected(src_path)
 
         if not overwrite and self.exists(dst_path):
-            raise FileExists(dst_path)
+            raise DestinationExists(dst_path)
 
         src_path = ensure_unicode(src_path)
         dst_path = ensure_unicode(dst_path)
