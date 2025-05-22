@@ -357,7 +357,6 @@ class OnedataFS(FS):
 
     def __init__(
         self,
-        host,  # type: Text
         token,  # type: Text
         port=443,  # type: int
         space=[],  # type: [Text]
@@ -375,14 +374,11 @@ class OnedataFS(FS):
         """
         Onedata client OnedataFS constructor.
 
-        `OnedataFS` instance maintains an active connection pool to the
-        Oneprovider specified in the `host` parameter as long as it
-        is referenced in the code. To close the connection call `close()`
-        directly or use context manager.
+        `OnedataFS` instance maintains an active connection pool to several
+        Oneprovider instances based on currently opened data spaces.
+        To close all connections call `close()` directly or use context manager.
 
-        :param str host: The Onedata Oneprovider host name
         :param str token: The Onedata user access token
-        :param int port: The Onedata Oneprovider port
         :param list space: The list of space names which should be opened.
                            By default, all spaces are opened.
         :param list space_id: The list of space id's which should be opened.
@@ -412,9 +408,7 @@ class OnedataFS(FS):
         """
         # type: (...) -> OnedataFS
 
-        self._host = host
         self._token = token
-        self._port = port
         self._space = space
         self._space_id = space_id
         self._insecure = insecure
@@ -430,7 +424,6 @@ class OnedataFS(FS):
         self._tlocal = threading.local()
 
         self._odfs = onedatafs.OnedataFS(
-            self._host,
             self._token,
             space=self._space,
             space_id=self._space_id,
@@ -438,7 +431,6 @@ class OnedataFS(FS):
             force_proxy_io=self._force_proxy_io,
             force_direct_io=self._force_direct_io,
             no_buffer=self._no_buffer,
-            port=self._port,
             provider_timeout=self._provider_timeout,
             metadata_cache_size=self._metadata_cache_size,
             drop_dir_cache_after=self._drop_dir_cache_after,
@@ -471,17 +463,6 @@ class OnedataFS(FS):
         # type: () -> None
 
         self._odfs.close()
-
-    def session_id(self):
-        """
-        Get Onedata session id.
-
-        Return unique session id representing the connection with
-        Oneprovider.
-        """
-        # type: () -> Text
-
-        return self._odfs.session_id()
 
     def isdir(self, path):
         """

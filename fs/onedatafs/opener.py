@@ -20,7 +20,7 @@ class OnedataFSOpener(Opener):
 
     Implementation of PyFilesystem opener for OnedataFS. Allows to
     pass URI's in the form:
-    `onedatafs://ONEPROVIDER_HOST:PORT?token=ACCESS_TOKEN&...`
+    `onedatafs://ONEZONE_HOST:PORT?token=ACCESS_TOKEN&...`
     """
 
     protocols = ["onedatafs"]
@@ -31,8 +31,6 @@ class OnedataFSOpener(Opener):
         if ofs.scheme != "onedatafs":
             raise "Invalid OnedataFS scheme"
 
-        host = ofs.hostname
-        port = ofs.port or 443
         args = parse_qs(ofs.query)
         token = args["token"][0]
         del args["token"]
@@ -46,4 +44,4 @@ class OnedataFSOpener(Opener):
             else:
                 cli_args += " --" + k + " " + v
 
-        return OnedataFS(host, token, port=port, cli_args=cli_args)
+        return OnedataFS(token, cli_args=cli_args)
