@@ -13,6 +13,7 @@ __license__ = (
 
 __all__ = ["OnedataFS"]
 
+import hashlib
 import io
 import stat
 import threading
@@ -359,7 +360,6 @@ class OnedataFS(FS):
     def __init__(
         self,
         token,  # type: Text
-        port=443,  # type: int
         space=[],  # type: [Text]
         space_id=[],  # type: [Text]
         insecure=False,  # type: bool
@@ -451,9 +451,7 @@ class OnedataFS(FS):
         """Return unique representation of the OnedataFS instance."""
         # type: () -> Text
 
-        return "<onedatafs '{}:{}/{}'>".format(
-            self._host, self._port, self.session_id()
-        )
+        return f"<onedatafs '{hashlib.md5(self._token.encode()).hexdigest()}'>"
 
     def close(self):
         """
