@@ -16,7 +16,6 @@ __all__ = ["OnedataFS"]
 import io
 import stat
 import threading
-from typing import Any, BinaryIO, Iterable, Optional, SupportsInt, Text
 
 from fs.base import FS
 from fs.constants import DEFAULT_CHUNK_SIZE
