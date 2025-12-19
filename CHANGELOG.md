@@ -1,6 +1,10 @@
-# Release notes for project fs-onedatafs
+Release notes for project fs-onedatafs
+======================================
 
-## CHANGELOG
+CHANGELOG
+---------
+
+### 25.0
 
 ### 21.02.8
 
